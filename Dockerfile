@@ -1,20 +1,23 @@
-# Stage 1: Build (This happens on GitHub/Docker Hub, not your 512MB VPS)
-FROM rust:1.75-slim AS builder
-RUN apt-get update && apt-get install -y pkg-config libssl-dev git
-WORKDIR /usr/src/openfang
-# Clone the official repo
-RUN git clone https://github.com .
-RUN cargo build --release
-
-# Stage 2: Tiny Runtime (This is what runs on Railway)
+# Use a minimal runtime image
 FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
-WORKDIR /app
-COPY --from=builder /usr/src/openfang/target/release/openfang /usr/local/bin/openfang
 
-# Create data directory for persistence
+# Install basics (needed for API calls and downloading the binary)
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Download the latest pre-compiled Linux binary (Fast & Zero RAM used for building)
+RUN curl -L https://github.com -o openfang \
+    && chmod +x openfang \
+    && mv openfang /usr/local/bin/
+
+# Persistent data directory
 RUN mkdir /data
 ENV OPENFANG_HOME=/data
 
+# Start the engine
 EXPOSE 8080
 CMD ["openfang", "start", "--port", "8080"]
