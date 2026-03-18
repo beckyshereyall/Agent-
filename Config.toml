@@ -1,0 +1,19 @@
+[default_model]
+provider = "groq"
+model = "llama-3.3-70b-versatile" # Ultra-fast for low RAM
+api_key_env = "GROQ_API_KEY"
+
+[routing]
+# Fallback to OpenRouter for complex reasoning
+fallback_provider = "openrouter"
+fallback_model = "openrouter/anthropic/claude-3.5-sonnet"
+api_key_env = "OPENROUTER_API_KEY"
+
+[channels.telegram]
+enabled = true
+bot_token_env = "TELEGRAM_BOT_TOKEN"
+dm_policy = "pairing" # Only you can talk to it
+
+[channels.discord]
+enabled = true
+bot_token_env = "DISCORD_BOT_TOKEN"
